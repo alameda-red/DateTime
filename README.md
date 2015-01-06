@@ -27,7 +27,7 @@ Usage
 ### Divide a \DateInterval
 Ever thought about splitting your \DateInterval('P1D') into two parts so you'd have \DateInterval('PT12H')? You can do that:
 
-´´´ṕhp
+´´´php
     $interval = new \DateInterval('P1D');
 
     $split = DateInterval::divide($interval, 2); // \DateInterval('PT12H')
@@ -36,7 +36,7 @@ Ever thought about splitting your \DateInterval('P1D') into two parts so you'd h
 ### Create a shorter, more readable representation of \DateInterval
 No idea what \DateTime('PT86400S) means? Make it more readable:
 
-´´´ṕhp
+´´´php
     $interval = new \DateInterval('PT86400S');
 
     $split = DateInterval::shorten($interval); // \DateInterval('P1D')
@@ -49,7 +49,7 @@ No idea what \DateTime('PT86400S) means? Make it more readable:
 If you don't want to store your \DateInterval object in a human readable form it is probably more catchy reading 'PT24H'
 or 'P1D' in your database over the approach of other developers to store the value in seconds (86400):
 
-´´´ṕhp
+´´´php
     $interval = new \DateInterval('PT86400S');
 
     $split = DateInterval::getString($interval); // 'P1D'
@@ -60,7 +60,7 @@ or 'P1D' in your database over the approach of other developers to store the val
 ### Shorten the string by using larger time units
 So \DateInterval('PT1440M') is a day, make it look like one:
 
-´´´ṕhp
+´´´php
     $interval = new \DateInterval('PT1440M');
 
     $split = DateInterval::shortenString($interval); // 'P1D'
