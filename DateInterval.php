@@ -8,16 +8,20 @@ final class DateInterval
 {
     /**
      * @param \DateInterval $base
-     * @param mixed:\DateInterval|\DateInterval $vars
+     * @param mixed:\DateInterval|\DateInterval[] $vars
+     * @param \DateInterval $vars,...
      * @return \DateInterval
      */
     static public function sum(\DateInterval $base, $vars)
     {
+        if (func_num_args() < 2) { throw new \InvalidArgumentException('Supply at least 2 \DateInterval objects'); }
+
         if (is_array($vars)) {
             $intervals =  array_values($vars);
         } else {
             $intervals = func_get_args();
-            unset ($intervals[0]);
+
+            unset($intervals[0]);
         }
 
         try { /* @var $intervals \DateInterval[] */
