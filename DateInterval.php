@@ -2,8 +2,48 @@
 
 namespace Alameda\Component\DateTime;
 
+use Zebba\Component\Utility\ParameterConverter;
+
 final class DateInterval
 {
+    /**
+     * @param mixed \DateInterval[]
+     * @return \DateInterval
+     */
+    static public function sum()
+    {
+        if (func_num_args() < 2) {
+            throw new \InvalidArgumentException('You did not provide enough parameters.');
+        }
+
+        try { /* @var $intervals \DateInterval[] */
+            $intervals = ParameterConverter::toArray(func_get_args(), '\DateInterval');
+        } catch (\DomainException $e) {
+            throw new \InvalidArgumentException('This method only accepts \DateInterval objects.');
+        }
+
+        /* @var $base \DateInterval */
+        $base = reset($intervals);
+        unset ($intervals[0]);
+
+        $s = self::toSeconds($base);
+
+        foreach ($intervals as $interval) { /* @var $interval \DateInterval */
+            if (! $interval->invert) {
+                $s += self::toSeconds($interval);
+            } else {
+                $s -= self::toSeconds($interval);
+            }
+        }
+
+        $result = new \DateInterval(sprintf('PT%dS', abs($s)));
+        $result = new \DateInterval(self::shortenString($result));
+
+        if ($s < 0) { $result->invert = true; }
+
+        return $result;
+    }
+
     /**
      * @param \DateInterval $interval
      * @param float $divisor
@@ -34,7 +74,7 @@ final class DateInterval
      * @param bool $include_days
      * @return \DateInterval
      */
-    static public function shorten(\DateInterval $interval, $include_days = true)
+    static public function shorten(\DateInterval $interval, $include_days = false)
     {
         $result = self::shortenString($interval, $include_days);
 
@@ -46,7 +86,7 @@ final class DateInterval
      * @param bool $include_days
      * @return string
      */
-    static public function getString(\DateInterval $interval, $include_days = true)
+    static public function getString(\DateInterval $interval, $include_days = false)
     {
         return self::shortenString($interval, $include_days);
     }
@@ -56,7 +96,7 @@ final class DateInterval
      * @param bool $include_days
      * @return string
      */
-    static private function shortenString(\DateInterval $interval, $include_days = true)
+    static private function shortenString(\DateInterval $interval, $include_days = false)
     {
         $m = self::toMap($interval);
 
@@ -78,6 +118,11 @@ final class DateInterval
                 $m['d']++;
             }
 
+            while($m['d'] > 364) {
+                $m['d'] -= 365;
+                $m['y']++;
+            }
+
             while($m['d'] > 29) {
                 $m['d'] -= 30;
                 $m['m']++;
@@ -92,9 +137,13 @@ final class DateInterval
             if (0 != $m['m']) { $result .= $m['m'] .'M'; }
             if (0 != $m['d']) { $result .= $m['d'] .'D'; }
         } else {
-            $m['h'] += $m['y'] * 365 * 24;
-            $m['h'] += $m['m'] * 30 * 24;
-            $m['h'] += $m['d'] * 24;
+            if (0 < $m['days']) {
+                $m['h'] += $m['days'] * 24;
+            } else {
+                $m['h'] += $m['y'] * 365 * 24;
+                $m['h'] += $m['m'] * 30 * 24;
+                $m['h'] += $m['d'] * 24;
+            }
         }
 
         if (0 < $m['h'] + $m['i'] + $m['s']) {
@@ -134,6 +183,7 @@ final class DateInterval
             'h' => ($i->h) ? $i->h : 0,
             'i' => ($i->i) ? $i->i : 0,
             's' => ($i->s) ? $i->s : 0,
+            'days' => ($i->days) ? $i->days : 0,
         );
     }
 
@@ -249,7 +299,25 @@ final class DateInterval
     {
         return array_map(function ($v) {
             return (int) $v;
-            }, $m
+        }, $m
         );
+    }
+
+    /**
+     * @param \DateInterval $i
+     * @return integet
+     */
+    static private function toSeconds(\DateInterval $i)
+    {
+        $seconds = 0;
+
+        $seconds += $i->y * 365 * 24 * 60 * 60;
+        $seconds += $i->m * 30 * 24 * 60 * 60;
+        $seconds += $i->d * 24 * 60 * 60;
+        $seconds += $i->h * 60 * 60;
+        $seconds += $i->i * 60;
+        $seconds += $i->s;
+
+        return $seconds;
     }
 } 
