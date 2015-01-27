@@ -7,24 +7,24 @@ use Zebba\Component\Utility\ParameterConverter;
 final class DateInterval
 {
     /**
-     * @param mixed \DateInterval[]
+     * @param \DateInterval $base
+     * @param mixed:\DateInterval|\DateInterval $vars
      * @return \DateInterval
      */
-    static public function sum()
+    static public function sum(\DateInterval $base, $vars)
     {
-        if (func_num_args() < 2) {
-            throw new \InvalidArgumentException('You did not provide enough parameters.');
+        if (is_array($vars)) {
+            $intervals =  array_values($vars);
+        } else {
+            $intervals = func_get_args();
+            unset ($intervals[0]);
         }
 
         try { /* @var $intervals \DateInterval[] */
-            $intervals = ParameterConverter::toArray(func_get_args(), '\DateInterval');
+            $intervals = ParameterConverter::toArray($intervals, '\DateInterval');
         } catch (\DomainException $e) {
             throw new \InvalidArgumentException('This method only accepts \DateInterval objects.');
         }
-
-        /* @var $base \DateInterval */
-        $base = reset($intervals);
-        unset ($intervals[0]);
 
         $s = self::toSeconds($base);
 

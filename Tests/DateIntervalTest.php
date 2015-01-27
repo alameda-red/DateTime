@@ -181,15 +181,7 @@ class DateIntervalTest extends \PHPUnit_Framework_TestCase
         $i2 = new \DateInterval('P1M');
         $i3 = new \DateInterval('P1D');
 
-        $this->assertEquals(new \DateInterval('PT9504H'), DateInterval::sum($base, $i1, $i2, $i3));
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testSumTooFewArgumentException()
-    {
-        DateInterval::sum(new \DateInterval('PT0S'));
+        $this->assertEquals(new \DateInterval('PT9504H'), DateInterval::sum($base, array($i1, $i2, $i3)));
     }
 
     /**
